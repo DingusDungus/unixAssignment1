@@ -24,44 +24,44 @@ echo $numberArray
 echo $sizeArray
 
 if [[ $sizeArray == "B" ]]; then
-    bytesNumber=$1
+    bytesNumber=$numberArray
     number=$(( $numberArray ))
-    tempNum=`echo $number/1000|bc -l`
-    kbytesNumber="$tempNum"KB
-    tempNum=`echo $number/1000000|bc -l`
-    mbytesNumber="$tempNum"MB
-    tempNum=`echo $number/1000000000|bc -l`
-    gbytesNumber="$tempNum"GB
+    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+    kbytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number/$((2**20))"|bc -l`
+    mbytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number/$((2**30))"|bc -l`
+    gbytesNumber="$tempNum"
 elif [[ $sizeArray == "KB" ]]; then
-    kbytesNumber=$1
+    kbytesNumber=$numberArray
     number=$(( $numberArray ))
-    tempNum=`echo $number*1000|bc -l`
-    bytesNumber="$tempNum"B
-    tempNum=`echo $number/1000|bc -l`
-    mbytesNumber="$tempNum"MB
-    tempNum=`echo $number/1000000|bc -l`
-    gbytesNumber="$tempNum"GB
+    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+    bytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+    mbytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number/$((2**20))"|bc -l`
+    gbytesNumber="$tempNum"
 elif [[ $sizeArray == "MB" ]]; then
-    mbytesNumber=$1
+    mbytesNumber=$numberArray
     number=$(( $numberArray ))
-    tempNum=`echo $number*1000000|bc -l`
-    bytesNumber="$tempNum"B
-    tempNum=`echo $number*1000|bc -l`
-    kbytesNumber="$tempNum"KB
-    tempNum=`echo $number/1000|bc -l`
-    gbytesNumber="$tempNum"GB
+    tempNum=`echo "scale=4; $number*$((2**20))"|bc -l`
+    bytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+    kbytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+    gbytesNumber="$tempNum"
 elif [[ $sizeArray == "GB" ]]; then
-    gbytesNumber=$1
+    gbytesNumber=$numberArray
     number=$(( $numberArray ))
-    tempNum=`echo $number*1000000000|bc -l`
-    bytesNumber="$tempNum"B
-    tempNum=`echo $number*1000000|bc -l`
-    kbytesNumber="$tempNum"KB
-    tempNum=`echo $number*1000|bc -l`
-    mbytesNumber="$tempNum"MB
+    tempNum=`echo "scale=4; $number*$((2**30))"|bc -l`
+    bytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number*$((2**20))"|bc -l`
+    kbytesNumber="$tempNum"
+    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+    mbytesNumber="$tempNum"
 fi
 
-echo $bytesNumber
-echo $kbytesNumber
-echo $mbytesNumber
-echo $gbytesNumber
+echo Bytes = $bytesNumber
+echo Kilobytes = $kbytesNumber
+echo Megabytes = $mbytesNumber
+echo Gigabytes = $gbytesNumber
