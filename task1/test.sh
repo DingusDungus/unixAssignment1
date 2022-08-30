@@ -4,7 +4,7 @@
 greeting=$1
 if [[ $greeting == "hello" ]];
 then
-    echo "hello equals hello"
+    echo "${greeting} equals hello"
 fi
 
 # if condition is false
