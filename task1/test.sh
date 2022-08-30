@@ -1,11 +1,12 @@
 #!/bin/bash
- 
+
 # if condition is true
-if [[ $1 == "hello" ]];
+greeting=$1
+if [[ $greeting == "hello" ]];
 then
     echo "hello equals hello"
 fi
- 
+
 # if condition is false
 if [ "hello" == "bye" ];
 then
