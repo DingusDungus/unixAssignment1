@@ -14,15 +14,37 @@ then
 fi
 dirArray=()
 
-for file in `pwd`/*;
-do 
-    echo $file
-    
-done
-
-if [[ $isSubDir != 1 ]];
+if [[ `test -d ./$1` ]];
 then
     echo "Error; dir given is not a subdir to workingdir"
     exit -1;
 fi
+
+currentDir=`pwd`
+
+if [[ !`find $currentDir -maxdepth 0 -writable` == $currentDir ]]; 
+then
+    echo "Cannot write the compressed file to the current directory"
+    exit -1;
+fi
+duOutput=`du -s $currentDir`
+size=()
+readarray -d " " -t size<<<"$duOutput"
+
+if [[ $(( $size[0] )) > 520000 ]];
+then
+    echo "Warning the file is 520MB. Proceed? [y/n]"
+    read input
+    if [[ input == "y" ]];
+    then
+        tar -cvf $1.tar /
+    else
+        exit 0;
+    fi
+fi
+
+tar -cvf $1.tar .
+
+
+
 
