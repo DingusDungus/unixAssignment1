@@ -2,7 +2,7 @@
 
 isSubDir=0;
 
-if [[ $# > 1 || $# == 0 ]]; 
+if [[ $# > 1 || $# == 0 ]];
 then
     echo "Error; too many or too little parameters given to program (Accepted amount is 1)"
     exit -1;
@@ -22,7 +22,7 @@ fi
 
 currentDir=`pwd`
 
-if [[ !`find $currentDir -maxdepth 0 -writable` == $currentDir ]]; 
+if [[ !`find $currentDir -maxdepth 0 -writable` == $currentDir ]];
 then
     echo "Cannot write the compressed file to the current directory"
     exit -1;
@@ -44,7 +44,5 @@ then
 fi
 
 tar -cvf $1.tar .
-
-
 
 
