@@ -44,5 +44,3 @@ then
 fi
 
 tar -cvf $1.tar .
-
-
