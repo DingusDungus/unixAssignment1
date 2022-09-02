@@ -27,11 +27,11 @@ then
     echo "Cannot write the compressed file to the current directory"
     exit -1;
 fi
-duOutput=`du -s $currentDir`
+duOutput=`du -s $1`
 size=()
-readarray -d " " -t size<<<"$duOutput"
-
-if [[ $(( $size[0] )) > 520000 ]];
+awk '{split($duOutput,size," ")} END { echo $size }'
+echo $size
+if [[ $(( ${size[0]} )) > 520000 ]];
 then
     echo "Warning the file is 520MB. Proceed? [y/n]"
     read input
