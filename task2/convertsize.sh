@@ -14,54 +14,57 @@ foo=$1
 for (( i=0; i<${#foo}; i++ )); do
     val=${foo:$i:1};
     if [[ $val =~ $re  ]]; then
-        numberArray+=$val
+        numberArray+=("$val")
     else
-        sizeArray+=$val
+        sizeArray+=("$val")
     fi
 done
 
-echo $numberArray
-echo $sizeArray
+# convert array to string
+IFS='' # set IFS
+numberString="${numberArray[*]// /}";IFS=$''
+sizeString="${sizeArray[*]// /}";IFS=$''
+IFS=' ' # reset IFS
 
-if [[ $sizeArray == "B" ]]; then
-    bytesNumber=$numberArray
-    number=$(( $numberArray ))
-    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+if [[ $sizeString == "B" ]]; then
+    bytesNumber=$numberString
+    number=$numberString
+    tempNum=$(echo "scale=4; $number/$((2**10))"|bc -l)
     kbytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number/$((2**20))"|bc -l`
+    tempNum=$(echo "scale=4; $number/$((2**20))"|bc -l)
     mbytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number/$((2**30))"|bc -l`
+    tempNum=$(echo "scale=4; $number/$((2**30))"|bc -l)
     gbytesNumber="$tempNum"
-elif [[ $sizeArray == "KB" ]]; then
-    kbytesNumber=$numberArray
-    number=$(( $numberArray ))
-    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+elif [[ $sizeString == "KB" ]]; then
+    kbytesNumber=$numberString
+    number=$numberString
+    tempNum=$(echo "scale=4; $number*$((2**10))"|bc -l)
     bytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+    tempNum=$(echo "scale=4; $number/$((2**10))"|bc -l)
     mbytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number/$((2**20))"|bc -l`
+    tempNum=$(echo "scale=4; $number/$((2**20))"|bc -l)
     gbytesNumber="$tempNum"
-elif [[ $sizeArray == "MB" ]]; then
-    mbytesNumber=$numberArray
-    number=$(( $numberArray ))
-    tempNum=`echo "scale=4; $number*$((2**20))"|bc -l`
+elif [[ $sizeString == "MB" ]]; then
+    mbytesNumber=$numberString
+    number=$numberString
+    tempNum=$(echo "scale=4; $number*$((2**20))"|bc -l)
     bytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+    tempNum=$(echo "scale=4; $number*$((2**10))"|bc -l)
     kbytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number/$((2**10))"|bc -l`
+    tempNum=$(echo "scale=4; $number/$((2**10))"|bc -l)
     gbytesNumber="$tempNum"
-elif [[ $sizeArray == "GB" ]]; then
-    gbytesNumber=$numberArray
-    number=$(( $numberArray ))
-    tempNum=`echo "scale=4; $number*$((2**30))"|bc -l`
+elif [[ $sizeString == "GB" ]]; then
+    gbytesNumber=$numberString
+    number=$numberString
+    tempNum=$(echo "scale=4; $number*$((2**30))"|bc -l)
     bytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number*$((2**20))"|bc -l`
+    tempNum=$(echo "scale=4; $number*$((2**20))"|bc -l)
     kbytesNumber="$tempNum"
-    tempNum=`echo "scale=4; $number*$((2**10))"|bc -l`
+    tempNum=$(echo "scale=4; $number*$((2**10))"|bc -l)
     mbytesNumber="$tempNum"
 fi
 
-echo Bytes = $bytesNumber
-echo Kilobytes = $kbytesNumber
-echo Megabytes = $mbytesNumber
-echo Gigabytes = $gbytesNumber
+echo Bytes = "$bytesNumber"
+echo Kilobytes = "$kbytesNumber"
+echo Megabytes = "$mbytesNumber"
+echo Gigabytes = "$gbytesNumber"
