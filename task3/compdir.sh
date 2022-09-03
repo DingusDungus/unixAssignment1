@@ -27,11 +27,26 @@ then
     echo "Cannot write the compressed file to the current directory"
     exit -1;
 fi
-duOutput=`du -s $currentDir`
-size=()
-readarray -d " " -t size<<<"$duOutput"
+duOutput=`du -s $1`
+sizeArray=( )
+re="^[+-]?[0-9]+([.][0-9]+)?"
 
-if [[ $(( $size[0] )) > 520000 ]];
+foo=$duOutput
+for (( i=0; i<${#foo}; i++ )); do
+    val=${foo:$i:1};
+    if [[ $val =~ $re  ]]; then
+        sizeArray+=("$val")
+    else
+        break
+    fi
+done
+
+IFS=''
+size="${sizeArray[*]// /}";IFS=$''
+IFS=' '
+
+
+if [[ $(( ${size} )) > 520000 ]];
 then
     echo "Warning the file is 520MB. Proceed? [y/n]"
     read input
