@@ -1,61 +1,43 @@
 #!/bin/bash
 
-isSubDir=0;
+nrOfParams=$#
+dirName=$1
+workingDir=$(pwd)
 
-if [[ $# -gt 1 || $# == 0 ]];
+# check number of parameters is 1
+if [[ $nrOfParams -gt 1 || $nrOfParams == 0 ]];
 then
-    echo "Error; too many or too little parameters given to program (Accepted amount is 1)"
-    exit 1;
-fi
-if [[ ! -d $1 ]];
-then
-    echo "Error; Directory does not exist, given directory $1"
-    exit 1;
-fi
-dirArray=()
-
-if [[ `test -d ./$1` ]];
-then
-    echo "Error; dir given is not a subdir to workingdir"
+    echo "compdir.sh: too many or too little parameters given to program (Accepted amount is 1)"
     exit 1;
 fi
 
-currentDir=`pwd`
+# check that the directory exists
+if [[ ! -d $dirName ]];
+then
+    echo "compdir.sh: cannot find directory $dirName"
+    exit 1;
+fi
 
-if [[ !`find $currentDir -maxdepth 0 -writable` == $currentDir ]];
+# check that the directory is a subdirectory to current directory (parent directory)
+if [[ $(test -d "$workingDir/$dirName") ]];
+then
+    echo "compdir.sh: dir given is not a subdir to current working directory"
+    exit 1;
+fi
+
+# check for write permissions
+if [[ ! $(find "$dirName" -maxdepth 0 -writable) == "$dirName" ]];
 then
     echo "Cannot write the compressed file to the current directory"
     exit 1;
 fi
-duOutput=`du -s $1`
-sizeArray=( )
-re="^[+-]?[0-9]+([.][0-9]+)?"
 
-foo=$duOutput
-for (( i=0; i<${#foo}; i++ )); do
-    val=${foo:$i:1};
-    if [[ $val =~ $re  ]]; then
-        sizeArray+=("$val")
-    else
-        break
-    fi
-done
-
-IFS=''
-size="${sizeArray[*]// /}";IFS=$''
-IFS=' '
-
-
-if [[ $(( ${size} )) > 520000 ]];
+# get directory size
+dirSize=$(du -s "$dirName" | awk "{print \$1}")
+# check directory size
+if [[ $(( dirSize )) -gt 520000 ]];
 then
-    echo "Warning the file is 520MB. Proceed? [y/n]"
-    read input
-    if [[ input == "y" ]];
-    then
-        tar -cvf $1.tar /
-    else
-        exit 0;
-    fi
+    read -rp "Warning: the directory is 520MB. Proceed? [y/n]" confirm && [[ $confirm == [yY] ]] || exit 1
 fi
 
-tar -cvf $1.tar .
+tar -cvf "$1.tgz" "$dirName"
