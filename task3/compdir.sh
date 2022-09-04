@@ -1,65 +1,47 @@
 #!/bin/bash
 
-isSubDir=0;
+nrOfParams=$#
+targetDir=$1
 
-if [[ $# > 1 || $# == 0 ]];
+# check number of parameters is 1
+if [[ $nrOfParams == 0 ]];
 then
-    echo "Error; too many or too little parameters given to program (Accepted amount is 1)"
-    exit -1;
+    echo "No arguments given! Give a directory as input"
+    exit 1;
 fi
-if [[ ! -d $1 ]];
+if [[ $nrOfParams -gt 1 ]];
 then
-    echo "Error; Directory does not exist, given directory $1"
-    exit -1;
-fi
-dirArray=()
-
-if [[ `test -d ./$1` ]];
-then
-    echo "Error; dir given is not a subdir to workingdir"
-    exit -1;
+    echo "To many arguments given! Give a directory as input"
+    exit 1;
 fi
 
-currentDir=`pwd`
+# check that the directory exists
+if [[ ! -d $targetDir ]];
+then
+    echo "compdir.sh: cannot find directory $targetDir"
+    exit 1;
+fi
 
-if [[ !`find $currentDir -maxdepth 0 -writable` == $currentDir ]];
+# check that target is a direct subdirectory of the current directory
+if [[ $targetDir == *"/"* ]]; then
+    echo "compdir.sh: you must specify a subdirectory"
+    exit 1;
+fi
+
+# check for write permissions
+if [[ $(find "$targetDir" -maxdepth 0 -writable) != "$targetDir" ]];
 then
     echo "Cannot write the compressed file to the current directory"
-    exit -1;
+    exit 1;
 fi
-duOutput=`du -s $1`
-sizeArray=( )
-re="^[+-]?[0-9]+([.][0-9]+)?"
 
-foo=$duOutput
-for (( i=0; i<${#foo}; i++ )); do
-    val=${foo:$i:1};
-    if [[ $val =~ $re  ]]; then
-        sizeArray+=("$val")
-    else
-        break
-    fi
-done
-
-IFS=''
-size="${sizeArray[*]// /}";IFS=$''
-IFS=' '
-
-
-if [[ $(( ${size} )) > 520000 ]];
+# get directory size
+dirSize=$(du -s "$targetDir" | awk "{print \$1}")
+# check directory size
+if [[ $(( dirSize )) -lt 512000 ]];
 then
-    echo "Warning the file is 520MB. Proceed? [y/n]"
-    read input
-    if [[ input == "y" ]];
-    then
-        tar -cvf $1.tar /
-    else
-        exit 0;
-    fi
+    read -rp "Warning: the directory is 512MB. Proceed? [y/n]" confirm && [[ $confirm == [yY] ]] || exit 1
 fi
 
-tar -cvf $1.tar .
-
-
-
-
+# compress directory
+tar -cvf "$1.tgz" "$targetDir"
