@@ -28,7 +28,11 @@ lzop_file $1 &
 
 wait
 
-duOutput=`du -s $1`
+gzipSize=`du -s $1.gz`
+bzip2Size=`du -s $1.bz2`
+7zSize=`du -s $1.7z`
+lzopSize=`du -s $1.lz0`
+
 sizeArray=( )
 re="^[+-]?[0-9]+([.][0-9]+)?"
 
