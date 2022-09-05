@@ -36,9 +36,9 @@ then
 fi
 
 # get directory size
-dirSize=$(du -s "$targetDir" | awk "{print \$1}")
-# check directory size
-if [[ $(( dirSize )) -gt 512000 ]];
+dirSize=$(du -bs "$targetDir" | awk "{print \$1}")
+# check directory size, if larger than 512MB warn user
+if [[ $(( dirSize )) -gt 512000000 ]];
 then
     read -rp "Warning: the directory is 512MB. Proceed? [y/n] " confirm && [[ $confirm == [yY] ]] || exit 1
 fi

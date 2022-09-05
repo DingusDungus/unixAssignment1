@@ -3,6 +3,7 @@
 
 fileName=$1
 
+# define job functions
 function gzip_file()
 {
     gzip --keep "$1"
@@ -32,31 +33,29 @@ lzop_file "$fileName" &
 # wait for all jobs to finish
 wait
 
-# get compressed file sizes
-originalSize=$(du -s "$fileName" | awk "{print \$1}")
-gzipSize=$(du -s "$fileName.gz" | awk "{print \$1.gz}")
-bzip2Size=$(du -s "$fileName.bz2" | awk "{print \$1.bz}")
-p7zSize=$(du -s "$fileName.7z" | awk "{print \$1.7z}")
-lzopSize=$(du -s "$fileName.lzo" | awk "{print \$1.lzo}")
+# get smallest file
+smallestFile=$(find . -type f -printf "%p\t%s\n" | grep "$fileName" | sort -n -k2 | head -1)
 
-# compare file sizes
-if [[ $lzopSize -lt $bzip2Size && $lzopSize -lt $p7zSize && $lzopSize -lt $gzipSize ]];
-then
-    rm "$fileName.7z" "$fileName.bz2" "$fileName.gz"
-    echo "lzop file was smallest, removing the rest!"
-elif [[ $bzip2Size -lt $gzipSize && $bzip2Size -lt $p7zSize && $bzip2Size -lt $lzopSize ]];
-then
-    rm "$fileName.7z" "$fileName.gz" "$fileName.lzo"
-    echo "bzip2 file was smallest, removing the rest!"
-elif [[ $p7zSize -lt $gzipSize && $p7zSize -lt $bzip2Size && $p7zSize -lt $lzopSize ]];
-then
-    rm "$fileName.bz2" "$fileName.gz" "$fileName.lzo"
-    echo "p7zip file was smallest, removing the rest!"
-elif [[ $originalSize -lt $gzipSize && $originalSize -lt $bzip2Size && $originalSize -lt $lzopSize && $originalSize -lt $lzopSize ]];
-then
-    rm "$fileName.*"
-    echo "Original file is smallest, removing all compressed files!"
-else
-    rm "$fileName.bz2" "$fileName.7z" "$fileName.lzo"
-    echo "gzip file was smallest, removing the rest!"
-fi
+# check which compression was the best and remove the rest.
+case "$smallestFile" in
+    *gz*)
+        echo "Most compression obtained with gzip, Compressed file is $fileName.gz"
+        rm "$fileName.bz2" "$fileName.7z" "$fileName.lzo"
+        ;;
+    *bz2*)
+        echo "Most compression obtained with bzip2, Compressed file is $fileName.bz2"
+        rm "$fileName.7z" "$fileName.gz" "$fileName.lzo"
+        ;;
+    *7z*)
+        echo "Most compression obtained with p7zip, Compressed file is $fileName.7z"
+        rm "$fileName.bz2" "$fileName.gz" "$fileName.lzo"
+        ;;
+    *lzo*)
+        echo "Most compression obtained with lzop, Compressed file is $fileName.lzo"
+        rm "$fileName.7z" "$fileName.bz2" "$fileName.gz"
+        ;;
+    *)
+        echo "original file is the smallest, removing compressed files."
+        rm "$fileName.*"
+        ;;
+esac
