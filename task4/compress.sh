@@ -1,56 +1,62 @@
 #!/bin/bash
 # write rm <test file>.* to remove all files again
 
+fileName=$1
+
 function gzip_file()
 {
-    gzip --keep $1
+    gzip --keep "$1"
 }
 
 function bzip2_file()
 {
-    bzip2 --keep $1
+    bzip2 --keep "$1"
 }
 
 function p7zip_file()
 {
-    7z a $1 $1 > /dev/null
+    7z a "$1.7z" "$1" > /dev/null # redirect output to /dev/null since p7zip has no quiet mode.
 }
 
 function lzop_file()
 {
-    lzop -q $1
+    lzop -q "$1"
 }
 
-gzip_file $1 &
-bzip2_file $1 &
-p7zip_file $1 &
-lzop_file $1 &
+# start all jobs in parallel sending filename as a parameter
+gzip_file "$fileName" &
+bzip2_file "$fileName" &
+p7zip_file "$fileName" &
+lzop_file "$fileName" &
 
+# wait for all jobs to finish
 wait
 
-originalSize=$(du -s "$1" | awk "{print \$1}")
-gzipSize=$(du -s "$1.gz" | awk "{print \$1.gz}")
-bzip2Size=$(du -s "$1.bz2" | awk "{print \$1.bz}")
-_7zSize=$(du -s "$1.7z" | awk "{print \$1.7z}")
-lzopSize=$(du -s "$1.lzo" | awk "{print \$1.lzo}")
+# get compressed file sizes
+originalSize=$(du -s "$fileName" | awk "{print \$1}")
+gzipSize=$(du -s "$fileName.gz" | awk "{print \$1.gz}")
+bzip2Size=$(du -s "$fileName.bz2" | awk "{print \$1.bz}")
+p7zSize=$(du -s "$fileName.7z" | awk "{print \$1.7z}")
+lzopSize=$(du -s "$fileName.lzo" | awk "{print \$1.lzo}")
 
-if [[ $(($lzopSize)) -lt $(($bzip2Size)) && $(($lzopSize)) -lt $(($_7zSize)) && $(($lzopSize)) -lt $(($gzipSize)) ]];
+# compare file sizes
+if [[ $lzopSize -lt $bzip2Size && $lzopSize -lt $p7zSize && $lzopSize -lt $gzipSize ]];
 then
-    rm $1.7z $1.bz2 $1.gz
+    rm "$fileName.7z" "$fileName.bz2" "$fileName.gz"
     echo "lzop file was smallest, removing the rest!"
-elif [[ $(($bzip2Size)) -lt $(($gzipSize)) && $(($bzip2Size)) -lt $(($_7zSize)) && $(($bzip2Size)) -lt $(($lzopSize)) ]];
+elif [[ $bzip2Size -lt $gzipSize && $bzip2Size -lt $p7zSize && $bzip2Size -lt $lzopSize ]];
 then
-    rm $1.7z $1.gz $1.lzo
+    rm "$fileName.7z" "$fileName.gz" "$fileName.lzo"
     echo "bzip2 file was smallest, removing the rest!"
-elif [[ $(($_7zSize)) -lt $(($gzipSize)) && $(($_7zSize)) -lt $(($bzip2Size)) && $(($_7zSize)) -lt $(($lzopSize)) ]];
+elif [[ $p7zSize -lt $gzipSize && $p7zSize -lt $bzip2Size && $p7zSize -lt $lzopSize ]];
 then
-    rm $1.bz2 $1.gz $1.lzo
+    rm "$fileName.bz2" "$fileName.gz" "$fileName.lzo"
     echo "p7zip file was smallest, removing the rest!"
-elif [[ $(($originalSize)) -lt $(($gzipSize)) && $(($originalSize)) -lt $(($bzip2Size)) && $(($originalSize)) -lt $(($lzopSize)) && $(($originalSize)) -lt $(($lzopSize)) ]];
+elif [[ $originalSize -lt $gzipSize && $originalSize -lt $bzip2Size && $originalSize -lt $lzopSize && $originalSize -lt $lzopSize ]];
 then
-    rm $1.*
+    rm "$fileName.*"
     echo "Original file is smallest, removing all compressed files!"
 else
-    rm $1.bz2 $1.7z $1.lzo
+    rm "$fileName.bz2" "$fileName.7z" "$fileName.lzo"
     echo "gzip file was smallest, removing the rest!"
 fi
