@@ -45,3 +45,4 @@ fi
 
 # compress directory
 tar -cvf "$1.tgz" "$targetDir"
+echo Directory $targetDir archived as $targetDir.tgz
